@@ -1,4 +1,4 @@
-# 🚗 Garrage E-commerce App
+# 🚗 Garrage E-commerce Web App
 
 A robust **Car Spare Parts E-commerce System** designed for modern automotive businesses, developed by **Ramadhani Yassin**. This platform streamlines the buying and selling of car spares, offering seamless management for both customers and administrators.
 
