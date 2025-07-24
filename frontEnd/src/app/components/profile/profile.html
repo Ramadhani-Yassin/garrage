@@ -1,0 +1,614 @@
+<div class="user-dashboard">
+      <!-- Sidebar -->
+      <div class="sidebar" [class.collapsed]="sidebarCollapsed">
+        <div class="sidebar-header">
+      <h2 *ngIf="!sidebarCollapsed">🛡️ Client Panel</h2>
+          <button class="toggle-btn" (click)="toggleSidebar()">
+            {{ sidebarCollapsed ? '▶️' : '◀️' }}
+          </button>
+        </div>
+        <nav class="sidebar-nav">
+          <ul>
+            <li [class.active]="activeTab === 'dashboard'" (click)="setActiveTab('dashboard')">
+          <span class="icon">📊</span>
+              <span class="text" *ngIf="!sidebarCollapsed">Dashboard</span>
+            </li>
+            <li [class.active]="activeTab === 'orders'" (click)="setActiveTab('orders')">
+          <span class="icon">🛒</span>
+          <span class="text" *ngIf="!sidebarCollapsed">Orders</span>
+        </li>
+        <li [class.active]="activeTab === 'spares'" (click)="setActiveTab('spares')">
+          <span class="icon">🔧</span>
+          <span class="text" *ngIf="!sidebarCollapsed">All Spares</span>
+            </li>
+
+            <li [class.active]="activeTab === 'wishlist'" (click)="setActiveTab('wishlist')">
+              <span class="icon">⭐</span>
+              <span class="text" *ngIf="!sidebarCollapsed">Wishlist</span>
+            </li>
+            <li [class.active]="activeTab === 'profile'" (click)="setActiveTab('profile')">
+              <span class="icon">👤</span>
+              <span class="text" *ngIf="!sidebarCollapsed">Profile</span>
+            </li>
+        <!--
+            <li [class.active]="activeTab === 'addresses'" (click)="setActiveTab('addresses')">
+              <span class="icon">📍</span>
+              <span class="text" *ngIf="!sidebarCollapsed">Addresses</span>
+            </li>
+      -->
+            <li (click)="logout()">
+              <span class="icon">🚪</span>
+          <span class="text" *ngIf="!sidebarCollapsed">Logout</span>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content" [class.expanded]="sidebarCollapsed">
+        <header class="top-header">
+          <h1>{{ getPageTitle() }}</h1>
+          <div class="header-actions">
+        <span class="cart-icon" style="font-size:1.3rem;position:relative;cursor:pointer;margin-left:18px;" (click)="openCart()">
+  🛒
+  <span *ngIf="getCartItemCount() > 0" class="cart-badge">{{ getCartItemCount() }}</span>
+</span>
+            <span class="notification">🔔 <span class="notification-badge">{{ notifications }}</span></span>
+
+          </div>
+        </header>
+
+        <!-- Dashboard Tab -->
+        <div *ngIf="activeTab === 'dashboard'" class="tab-content">
+          <div class="welcome-section">
+        <h2>Welcome back, {{ userProfile.firstName || userProfile.fullName || 'User' }}! 👋</h2>
+            <p>Here's what's happening with your account today.</p>
+          </div>
+          <div class="dashboard-cards">
+            <div class="card">
+              <div class="card-icon">📦</div>
+          <div class="dashboard-label">Total Orders</div>
+          <div class="dashboard-value">{{ orders.length }}</div>
+            </div>
+            <div class="card">
+              <div class="card-icon">⏳</div>
+          <div class="dashboard-label">Pending Orders</div>
+          <div class="dashboard-value">{{ getPendingOrdersCount() }}</div>
+            </div>
+            <div class="card">
+              <div class="card-icon">⭐</div>
+          <div class="dashboard-label">Wishlist Items</div>
+          <div class="dashboard-value">{{ wishlistProducts.length }}</div>
+            </div>
+
+            
+            <div class="card">
+              <div class="card-icon">✅</div>
+          <div class="dashboard-label">Completed Orders</div>
+          <div class="dashboard-value">{{ getCompletedOrdersCount() }}</div>
+              </div>
+            </div>
+      <div class="pro-activity-card">
+        <h3 class="activity-header">📋 Recent Activities</h3>
+        <div class="activity-list pro-activity-list">
+          <div class="activity-item activity-new-user">🆕 Account created: {{ userProfile.email }}</div>
+          <div class="activity-item activity-approved" *ngIf="orders.length">✅ Last order placed: #{{ orders[0].id }}</div>
+          <div class="activity-item activity-product" *ngIf="wishlist.length">⭐ Wishlist updated</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div *ngIf="activeTab === 'orders'" class="tab-content">
+          <div class="section-header">
+        <h2>🛒 My Orders</h2>
+        <div class="filter-buttons order-filter-group">
+          <button class="btn btn-sm order-filter-btn" [class.active]="orderFilter === 'all'" (click)="orderFilter = 'all'">All</button>
+          <button class="btn btn-sm order-filter-btn" [class.active]="orderFilter === 'pending'" (click)="orderFilter = 'pending'">Pending</button>
+          <button class="btn btn-sm order-filter-btn" [class.active]="orderFilter === 'approved'" (click)="orderFilter = 'approved'">Approved</button>
+          <button class="btn btn-sm order-filter-btn" [class.active]="orderFilter === 'rejected'" (click)="orderFilter = 'rejected'">Rejected</button>
+          <button class="btn btn-sm order-filter-btn" [class.active]="orderFilter === 'shipped'" (click)="orderFilter = 'shipped'">Shipped</button>
+            </div>
+          </div>
+      <div class="orders-list pro-orders-list">
+        <div *ngFor="let order of getFilteredOrders()" class="order-card pro-order-card">
+              <div class="order-header">
+            <h4>Order #{{ order.id }}</h4>
+            <span class="order-status-badge status-{{ order.status }}">{{ statusLabel(order.status) }}</span>
+                </div>
+          <div class="order-details">
+            <div class="order-detail-row"><span class="detail-label">Products:</span> <span>{{ getProductNames(order) }}</span></div>
+            <div class="order-detail-row"><span class="detail-label">Total:</span> <span class="order-total">TZS {{ order.total }}</span></div>
+            <div class="order-detail-row"><span class="detail-label">Date:</span> <span>{{ order.orderDate | date:'short' }}</span></div>
+              </div>
+              <div class="order-actions">
+                <button class="btn btn-secondary" (click)="viewOrderDetails(order)">👁️ View Details</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wishlist Tab -->
+        <div *ngIf="activeTab === 'wishlist'" class="tab-content">
+          <div class="section-header">
+            <h2>⭐ My Wishlist</h2>
+            <p>{{ wishlistProducts.length }} items saved for later</p>
+          </div>
+          <div class="wishlist-grid" *ngIf="wishlistProducts.length > 0">
+            <div *ngFor="let product of wishlistProducts" class="wishlist-item">
+              <div class="product-image">
+                <img [src]="'http://localhost:8080' + product.image" [alt]="product.name">
+              </div>
+              <div class="product-details">
+                <h3>{{ product.name }}</h3>
+                <div class="price-section">
+                  <span class="current-price">TZS {{ product.price }}</span>
+                  <span class="stock-status" [class.in-stock]="product.stock > 0">
+                    {{ product.stock > 0 ? '✅ In Stock' : '❌ Out of Stock' }}
+                  </span>
+                </div>
+                <div class="item-actions">
+                  <ng-container *ngIf="getCartQuantity(product) > 0; else addToCartBtnWishlist">
+                    <button class="btn btn-sm" (click)="decrementCart(product)">-</button>
+                    <span class="cart-qty">{{ getCartQuantity(product) }}</span>
+                    <button class="btn btn-sm" (click)="incrementCart(product)" [disabled]="product.stock <= getCartQuantity(product)">+</button>
+                    <span class="wishlist-icon">
+                      <span class="wishlist-heart wishlist-heart-filled">❤️</span>
+                    </span>
+                  </ng-container>
+                  <ng-template #addToCartBtnWishlist>
+                    <button class="btn btn-primary" [disabled]="product.stock <= 0" (click)="addToCart(product)">
+                      🛒 Add to Cart
+                    </button>
+                    <span class="wishlist-icon">
+                      <span class="wishlist-heart wishlist-heart-filled">❤️</span>
+                    </span>
+                  </ng-template>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="wishlistProducts.length === 0" class="empty-state">
+            <div class="empty-icon">💔</div>
+            <h3>Your wishlist is empty</h3>
+            <p>Save items you love to buy them later</p>
+            <button class="btn btn-primary" (click)="browseProdcuts()">🛍️ Start Shopping</button>
+          </div>
+        </div>
+
+        <!-- Profile Tab -->
+        <div *ngIf="activeTab === 'profile'" class="tab-content">
+      <div class="profile-card">
+        <div class="profile-avatar-section">
+          <div class="profile-avatar-large">
+            <span class="avatar-icon">👤</span>
+              </div>
+          <button class="btn btn-sm btn-photo" type="button">📷 Change Photo</button>
+                  </div>
+        <form class="profile-info-grid" (ngSubmit)="updateProfile()">
+          <div *ngIf="successMessage" class="message success">{{ successMessage }}</div>
+          <div *ngIf="errorMessage" class="message error">{{ errorMessage }}</div>
+          <div class="info-row">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" [(ngModel)]="userProfile.fullName" name="fullName" required>
+                  </div>
+          <div class="info-row">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" [(ngModel)]="userProfile.email" name="email" required>
+                  </div>
+          <div class="info-row">
+                    <label for="phone">Phone</label>
+                    <input type="tel" id="phone" [(ngModel)]="userProfile.phone" name="phone">
+                  </div>
+          <div class="info-row">
+            <label for="region">Region</label>
+            <input type="text" id="region" [(ngModel)]="userProfile.region" name="region">
+                </div>
+          <div class="info-row">
+            <label for="role">Role</label>
+            <input type="text" id="role" [(ngModel)]="userProfile.role" name="role" readonly>
+                  </div>
+          <div class="modal-actions">
+                <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                <button type="button" class="btn btn-secondary" (click)="resetForm()">🔄 Reset</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Addresses Tab -->
+        <div *ngIf="activeTab === 'addresses'" class="tab-content">
+          <div class="section-header">
+            <h2>📍 My Addresses</h2>
+            <button class="btn btn-primary" (click)="showAddAddressModal = true">➕ Add New Address</button>
+          </div>
+
+          <div class="addresses-grid">
+            <div *ngFor="let address of addresses" class="address-card">
+              <div class="address-header">
+                <div class="address-type">
+                  <span class="type-badge type-{{ address.type }}">{{ address.type | titlecase }}</span>
+                  <span *ngIf="address.isDefault" class="default-badge">🏠 Default</span>
+                </div>
+                <div class="address-actions">
+                  <button class="btn btn-sm btn-secondary" (click)="editAddress(address)">✏️</button>
+                  <button class="btn btn-sm btn-danger" (click)="deleteAddress(address.id.toString())">🗑️</button>
+                </div>
+              </div>
+              <div class="address-details">
+                <h4>{{ address.firstName }} {{ address.lastName }}</h4>
+                <p>{{ address.street }}</p>
+                <p>{{ address.city }}, {{ address.state }} {{ address.zipCode }}</p>
+                <p>{{ address.country }}</p>
+              </div>
+              <div class="address-footer">
+                <button *ngIf="!address.isDefault" class="btn btn-sm btn-outline" (click)="setDefaultAddress(address.id.toString())">
+                    🏠 Set as Default
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add Address Modal -->
+          <div *ngIf="showAddAddressModal" class="modal-overlay" (click)="showAddAddressModal = false">
+            <div class="modal" (click)="$event.stopPropagation()">
+              <h3>➕ Add New Address</h3>
+              <form (ngSubmit)="addAddress()">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Address Type</label>
+                    <select [(ngModel)]="newAddress.type" name="type" required>
+                      <option value="home">Home</option>
+                      <option value="work">Work</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" [(ngModel)]="newAddress.firstName" name="firstName" required>
+                  </div>
+                  <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" [(ngModel)]="newAddress.lastName" name="lastName" required>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Street Address</label>
+                  <input type="text" [(ngModel)]="newAddress.street" name="street" required>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>City</label>
+                    <input type="text" [(ngModel)]="newAddress.city" name="city" required>
+                  </div>
+                  <div class="form-group">
+                    <label>State</label>
+                    <input type="text" [(ngModel)]="newAddress.state" name="state" required>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>ZIP Code</label>
+                    <input type="text" [(ngModel)]="newAddress.zipCode" name="zipCode" required>
+                  </div>
+                  <div class="form-group">
+                    <label>Country</label>
+                    <input type="text" [(ngModel)]="newAddress.country" name="country" required>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" [(ngModel)]="newAddress.isDefault" name="isDefault">
+                    Set as default address
+                  </label>
+                </div>
+                <div class="modal-actions">
+                  <button type="submit" class="btn btn-primary">✅ Add Address</button>
+                  <button type="button" class="btn btn-secondary" (click)="showAddAddressModal = false">❌ Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+    <!-- Spares Tab (was Coupons) -->
+    <div *ngIf="activeTab === 'spares'" class="tab-content">
+          <div class="section-header">
+        <h2>🔧  All Spares</h2>
+        <p>{{ spares.length }} spares available</p>
+      </div>
+      <div class="wishlist-grid">
+        <div *ngFor="let product of products" class="wishlist-item">
+          <div class="product-image">
+            <img [src]="'http://localhost:8080' + product.image" [alt]="product.name">
+          </div>
+          <div class="product-details">
+            <h3>{{ product.name }}</h3>
+            <div class="price-section">
+              <span class="current-price">TZS {{ product.price }}</span>
+              <span class="stock-status" [class.in-stock]="product.stock > 0">
+                {{ product.stock > 0 ? '✅ In Stock' : '❌ Out of Stock' }}
+              </span>
+                  </div>
+            <div class="item-actions">
+              <ng-container *ngIf="getCartQuantity(product) > 0; else addToCartBtn2">
+                <button class="btn btn-sm" (click)="decrementCart(product)">-</button>
+                <span class="cart-qty">{{ getCartQuantity(product) }}</span>
+                <button class="btn btn-sm" (click)="incrementCart(product)" [disabled]="product.stock <= getCartQuantity(product)">+</button>
+                <span class="wishlist-icon" (click)="addOrRemoveWishlist(product)" [title]="isInWishlist(product) ? 'Remove from Wishlist' : 'Add to Wishlist'">
+                  <span [ngClass]="{'wishlist-heart': true, 'wishlist-heart-filled': isInWishlist(product)}">⭐</span>
+                </span>
+              </ng-container>
+              <ng-template #addToCartBtn2>
+                <button class="btn btn-primary" [disabled]="product.stock <= 0" (click)="addToCart(product)">
+                  🛒 Add to Cart
+                </button>
+                <span class="wishlist-icon" (click)="addOrRemoveWishlist(product)" [title]="isInWishlist(product) ? 'Remove from Wishlist' : 'Add to Wishlist'">
+                  <span [ngClass]="{'wishlist-heart': true, 'wishlist-heart-filled': isInWishlist(product)}">⭐</span>
+                </span>
+              </ng-template>
+            </div>
+          </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Support Tab -->
+        <div *ngIf="activeTab === 'support'" class="tab-content">
+          <div class="support-container">
+            <div class="support-header">
+              <h2>💬 Customer Support</h2>
+              <p>We're here to help! Choose how you'd like to get in touch.</p>
+            </div>
+
+            <div class="support-options">
+              <div class="support-card">
+                <div class="support-icon"></div>
+                <h3>💬 Live Chat</h3>
+                <p>Chat with our support team in real-time</p>
+                <button class="btn btn-primary">Start Chat</button>
+              </div>
+              <div class="support-card">
+                <div class="support-icon"></div>
+                <h3>📧 Email Support</h3>
+                <p>Send us an email and we'll respond within 24 hours</p>
+                <button class="btn btn-secondary">Send Email</button>
+              </div>
+              <div class="support-card">
+                <div class="support-icon"></div>
+                <h3>📞 Phone Support</h3>
+                <p>Call us directly for immediate assistance</p>
+                <button class="btn btn-success">Call Now</button>
+              </div>
+            </div>
+
+            <div class="faq-section">
+              <h3>🤔 Frequently Asked Questions</h3>
+              <div class="faq-list">
+                <div class="faq-item" *ngFor="let faq of faqs" (click)="toggleFaq(faq)">
+                  <div class="faq-question">
+                    <span>{{ faq.question }}</span>
+                    <span class="faq-toggle">{{ faq.expanded ? '−' : '+' }}</span>
+                  </div>
+                  <div class="faq-answer" *ngIf="faq.expanded">
+                    <p>{{ faq.answer }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div *ngIf="activeTab === 'settings'" class="tab-content">
+          <div class="settings-container">
+            <h2>⚙️ Account Settings</h2>
+
+            <div class="settings-sections">
+              <div class="settings-section">
+                <h3>🔔 Notifications</h3>
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <label>Email Notifications</label>
+                    <p>Receive order updates and promotions via email</p>
+                  </div>
+                  <input type="checkbox" [(ngModel)]="settings.emailNotifications">
+                </div>
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <label>SMS Notifications</label>
+                    <p>Receive order updates via text message</p>
+                  </div>
+                  <input type="checkbox" [(ngModel)]="settings.smsNotifications">
+                </div>
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <label>Push Notifications</label>
+                    <p>Receive notifications in your browser</p>
+                  </div>
+                  <input type="checkbox" [(ngModel)]="settings.pushNotifications">
+                </div>
+              </div>
+
+              <div class="settings-section">
+                <h3>🔒 Privacy</h3>
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <label>Profile Visibility</label>
+                    <p>Make your profile visible to other users</p>
+                  </div>
+                  <input type="checkbox" [(ngModel)]="settings.profileVisibility">
+                </div>
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <label>Order History Privacy</label>
+                    <p>Keep your order history private</p>
+                  </div>
+                  <input type="checkbox" [(ngModel)]="settings.orderHistoryPrivate">
+                </div>
+              </div>
+
+              <div class="settings-section">
+                <h3>🔐 Security</h3>
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <label>Two-Factor Authentication</label>
+                    <p>Add an extra layer of security to your account</p>
+                  </div>
+                  <button class="btn btn-sm btn-primary">{{ settings.twoFactorEnabled ? 'Disable' : 'Enable' }}</button>
+                </div>
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <label>Change Password</label>
+                    <p>Update your account password</p>
+                  </div>
+                  <button class="btn btn-sm btn-secondary">Change Password</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-actions">
+              <button class="btn btn-primary" (click)="saveSettings()">💾 Save Settings</button>
+              <button class="btn btn-danger" (click)="deleteAccount()">🗑️ Delete Account</button>
+            </div>
+          </div>
+        </div>
+    <!-- Custom Logout Modal -->
+    <div *ngIf="showLogoutModal" class="modal-overlay" (click)="cancelLogout()">
+      <div class="modal logout-modal" (click)="$event.stopPropagation()">
+        <h3>Confirm Logout</h3>
+        <p>Are you sure you want to logout?</p>
+        <div class="modal-actions">
+          <button class="btn btn-danger" (click)="confirmLogout()">Yes</button>
+          <button class="btn btn-secondary" (click)="cancelLogout()">Cancel</button>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+
+<!-- Cart Modal -->
+<div *ngIf="showCartModal" class="modal-overlay" (click)="closeCart()">
+  <div class="modal cart-modal pro-cart-modal" (click)="$event.stopPropagation()">
+    <div class="cart-header">
+      <h3>🛒 Your Cart</h3>
+      <button class="close-btn" (click)="closeCart()">&times;</button>
+    </div>
+    <div *ngIf="cartLoading" class="cart-loading">Loading...</div>
+    <div *ngIf="cart && cart.items.length > 0">
+      <div class="cart-items-list">
+        <div *ngFor="let item of cart.items" class="cart-item-row pro-cart-item-row">
+          <img [src]="'http://localhost:8080' + item.product.image" [alt]="item.product.name" width="50" height="50" class="cart-item-img">
+          <div class="cart-item-details">
+            <span class="cart-item-name">{{ item.product.name }}</span>
+            <span class="cart-item-price">TZS {{ item.price }}</span>
+            <div class="cart-item-qty">
+              <button class="btn btn-sm qty-btn" (click)="decrementCart(item.product)">-</button>
+              <input type="number" min="1" [value]="item.quantity" (change)="updateCartItem(item, $event.target.valueAsNumber)">
+              <button class="btn btn-sm qty-btn" (click)="incrementCart(item.product)">+</button>
+            </div>
+          </div>
+          <div class="cart-item-total">TZS {{ item.price * item.quantity }}</div>
+          <button class="btn btn-sm btn-danger remove-btn" (click)="removeCartItem(item)">Remove</button>
+        </div>
+      </div>
+      <div class="cart-summary">
+        <div class="cart-summary-row">
+          <strong>Total:</strong>
+          <span class="cart-total">TZS {{ getCartTotal() }}</span>
+        </div>
+        <div class="cart-summary-row cart-summary-items">
+          <strong>Items:</strong>
+          <span>
+            <ng-container *ngFor="let item of cart.items; let last = last">
+              {{ item.product.name }} ({{ item.quantity }})<span *ngIf="!last">, </span>
+            </ng-container>
+          </span>
+        </div>
+      </div>
+      <div class="cart-actions pro-cart-actions">
+        <button class="btn btn-secondary" (click)="clearCart()">Clear Cart</button>
+        <button class="btn btn-primary confirm-btn" (click)="confirmOrder()">Confirm Order</button>
+        <button class="btn btn-secondary" (click)="closeCart()">Close</button>
+      </div>
+    </div>
+    <div *ngIf="cart && cart.items.length === 0 && !cartLoading" class="empty-cart-state">
+      <p>Your cart is empty.</p>
+      <button class="btn btn-secondary" (click)="closeCart()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Modal -->
+<div *ngIf="showPaymentModal" class="modal-overlay stylish-modal-overlay" (click)="showPaymentModal = false">
+  <div class="modal payment-modal stylish-modal" (click)="$event.stopPropagation()">
+    <h3 class="modal-title stylish-title">Payment Details</h3>
+    <div *ngIf="paymentError" class="message error stylish-error">{{ paymentError }}</div>
+    <form (ngSubmit)="finishOrdering()" class="stylish-form">
+      <div class="form-group stylish-form-group">
+        <label for="paymentMethod">Payment Method</label>
+        <select id="paymentMethod" [(ngModel)]="paymentMethod" name="paymentMethod" required class="stylish-select">
+          <option value="" disabled selected>Select method</option>
+          <option value="mix">MIX BY YAS</option>
+          <option value="mpesa">M-PESA</option>
+          <option value="halopesa">HALOPESA</option>
+          <option value="airtel">AIRTEL MONEY</option>
+          <option value="bank">BANK</option>
+        </select>
+      </div>
+      <div class="form-group stylish-form-group">
+        <label *ngIf="paymentMethod === 'mpesa' || paymentMethod === 'halopesa' || paymentMethod === 'airtel' || paymentMethod === 'mix'" for="paymentPhone">Phone Number</label>
+        <label *ngIf="paymentMethod === 'bank'" for="paymentCard">Card/Account Number</label>
+        <input
+          *ngIf="paymentMethod"
+          type="text"
+          id="paymentPhoneOrCard"
+          [(ngModel)]="paymentPhoneOrCard"
+          name="paymentPhoneOrCard"
+          required
+          class="stylish-input"
+          placeholder="{{ (paymentMethod === 'bank') ? 'Enter card/account number' : 'Enter phone number' }}"
+        />
+      </div>
+      <div class="form-group stylish-form-group">
+        <label for="paymentFullName">Full Name</label>
+        <input type="text" id="paymentFullName" [(ngModel)]="paymentFullName" name="paymentFullName" required class="stylish-input" />
+      </div>
+      <div class="modal-actions stylish-modal-actions">
+        <button type="submit" class="btn btn-primary stylish-btn" [disabled]="!paymentMethod || !paymentPhoneOrCard || !paymentFullName">
+          Finish Ordering
+        </button>
+        <button type="button" class="btn btn-secondary stylish-btn-cancel" (click)="showPaymentModal = false">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div *ngIf="showOrderSuccess" class="order-success-message">
+  <span class="success-icon">✅</span>
+  <span>{{ successMessage }}</span>
+</div>
+
+<div *ngIf="showOrderDetailsModal && selectedOrder" class="modal-overlay" (click)="closeOrderDetailsModal()">
+  <div class="modal order-details-modal" (click)="$event.stopPropagation()">
+    <h3>Order #{{ selectedOrder.id }}</h3>
+    <div class="order-detail-row"><strong>Status:</strong> {{ statusLabel(selectedOrder.status) }}</div>
+    <div class="order-detail-row"><strong>Date:</strong> {{ selectedOrder.orderDate | date:'short' }}</div>
+    <div class="order-detail-row"><strong>Total:</strong> TZS {{ selectedOrder.total }}</div>
+    <div class="order-detail-row"><strong>Products:</strong>
+      <ul>
+        <li *ngFor="let item of selectedOrder.items">
+          {{ item.productName }} (x{{ item.quantity }}) - TZS {{ item.price }}
+        </li>
+      </ul>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" (click)="closeOrderDetailsModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+
+

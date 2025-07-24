@@ -1,0 +1,38 @@
+<app-navbar></app-navbar>
+
+<div *ngFor="let p of products" class="product-details">
+  <img [src]="'http://localhost:8080' + p.image" [alt]="p.name" />
+  <div class="details">
+    <h2>{{ p.name }}</h2>
+    <div class="price">TZS {{ p.price }}</div>
+    <div class="stock" [class.out]="p.stock <= 0">
+      {{ p.stock > 0 ? 'In Stock' : 'Out of Stock' }}
+    </div>
+    <p class="description">{{ getDescription(p) }}</p>
+    <button [disabled]="p.stock <= 0" (click)="addToCart()">Add to Cart</button>
+  </div>
+</div>
+<!--<div class="reviews">
+  <h3>Customer Reviews</h3>
+  <div *ngFor="let review of reviews" class="review">
+    <div class="reviewer">{{ review.reviewer }}</div>
+    <div class="rating">⭐ {{ review.rating }}</div>
+    <p>{{ review.comment }}</p>
+  </div>
+  <div *ngIf="reviews.length === 0" class="no-reviews">No reviews yet.</div>
+</div>-->
+
+<div class="related-products">
+  <h3>Related Products</h3>
+  <div *ngFor="let related of relatedProducts" class="related-product">
+    <img [src]="'http://localhost:8080' + related.image" [alt]="related.name" />
+    <div class="name">{{ related.name }}</div>
+    <div class="price">TZS {{ related.price }}</div>
+    <button (click)="viewProduct(related.id!)">View Details</button>
+  </div>
+</div>
+
+<div class="footer-spacer"></div>
+
+
+<app-footer></app-footer>

@@ -1,0 +1,53 @@
+<app-navbar></app-navbar>
+
+<div class="cart-container">
+  <h2>🛒 Your Cart</h2>
+  <div *ngIf="cartItems.length; else emptyCart">
+    <div class="cart-item" *ngFor="let item of cartItems">
+      <img [src]="item.image" alt="{{item.name}}" />
+      <div class="item-info">
+        <h4>{{item.name}}</h4>
+        <p class="price">${{item.price}}</p>
+        <div class="quantity-controls">
+          <button (click)="decreaseQuantity(item)" [disabled]="item.quantity === 1">-</button>
+          <span>{{item.quantity}}</span>
+          <button (click)="increaseQuantity(item)">+</button>
+        </div>
+        <div class="item-subtotal">
+          Subtotal: <strong>${{ getSubtotal(item).toFixed(2) }}</strong>
+        </div>
+        <button class="remove-btn" (click)="removeItem(item)">Remove</button>
+      </div>
+    </div>
+    <div class="cart-summary">
+      <div class="summary-row">
+        <span>Items Total:</span>
+        <span>${{ getItemsTotal().toFixed(2) }}</span>
+      </div>
+      <div class="summary-row">
+        <span>Tax (7%):</span>
+        <span>${{ getTax().toFixed(2) }}</span>
+      </div>
+      <div class="summary-row">
+        <span>Shipping:</span>
+        <span>${{ shipping.toFixed(2) }}</span>
+      </div>
+      <div class="summary-row total">
+        <strong>Grand Total:</strong>
+        <strong>${{ getGrandTotal().toFixed(2) }}</strong>
+      </div>
+      <div class="summary-actions">
+        <button class="clear-btn" (click)="clearCart()">Clear Cart</button>
+        <button class="checkout-btn" [disabled]="!cartItems.length">Checkout</button>
+      </div>
+    </div>
+  </div>
+  <ng-template #emptyCart>
+    <div class="empty-cart">
+      <span class="empty-icon">🛒</span>
+      <p>Your cart is empty.</p>
+    </div>
+  </ng-template>
+</div>
+
+<app-footer></app-footer>

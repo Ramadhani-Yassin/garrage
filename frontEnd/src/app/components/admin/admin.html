@@ -1,0 +1,439 @@
+<div class="admin-dashboard">
+      <!-- Sidebar -->
+      <div class="sidebar" [class.collapsed]="sidebarCollapsed">
+        <div class="sidebar-header">
+          <h2 *ngIf="!sidebarCollapsed">🛡️ Admin Panel</h2>
+          <button class="toggle-btn" (click)="toggleSidebar()">
+            {{ sidebarCollapsed ? '▶️' : '◀️' }}
+          </button>
+        </div>
+        
+        <nav class="sidebar-nav">
+          <ul>
+            <li [class.active]="activeTab === 'dashboard'" (click)="setActiveTab('dashboard')">
+              <span class="icon">📊</span>
+              <span class="text" *ngIf="!sidebarCollapsed">Dashboard</span>
+            </li>
+            <li [class.active]="activeTab === 'products'" (click)="setActiveTab('products')">
+              <span class="icon">📦</span>
+              <span class="text" *ngIf="!sidebarCollapsed">Products</span>
+            </li>
+            <li [class.active]="activeTab === 'users'" (click)="setActiveTab('users')">
+              <span class="icon">👥</span>
+              <span class="text" *ngIf="!sidebarCollapsed">Users</span>
+            </li>
+            <li [class.active]="activeTab === 'orders'" (click)="setActiveTab('orders')">
+              <span class="icon">🛒</span>
+              <span class="text" *ngIf="!sidebarCollapsed">Orders</span>
+            </li>
+            <li [class.active]="activeTab === 'analytics'" (click)="setActiveTab('analytics')">
+              <span class="icon">📈</span>
+              <span class="text" *ngIf="!sidebarCollapsed">Analytics</span>
+            </li>
+            <!--<li [class.active]="activeTab === 'settings'" (click)="setActiveTab('settings')">
+              <span class="icon">⚙️</span>
+              <span class="text" *ngIf="!sidebarCollapsed">Settings</span>
+            </li>
+          -->
+            <li [class.active]="activeTab === 'profile'" (click)="setActiveTab('profile')">
+              <span class="icon">👤</span>
+              <span class="text" *ngIf="!sidebarCollapsed">Profile</span>
+            </li>
+            <li (click)="logout()">
+              <span class="icon">🚪</span>
+              <span class="text" *ngIf="!sidebarCollapsed">Logout</span>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content" [class.expanded]="sidebarCollapsed">
+        <div *ngIf="errorMessage" class="message error" style="margin: 16px 0;">{{ errorMessage }}</div>
+        <div *ngIf="successMessage" class="message success" style="margin: 16px 0;">{{ successMessage }}</div>
+        <header class="top-header">
+          <h1>{{ getPageTitle() }}</h1>
+          <div class="header-actions">
+            <span class="notification">🔔 <span class="badge">{{ notifications }}</span></span>
+            <span class="admin-welcome" *ngIf="adminInfo.role === 'admin'">Welcome, {{ adminInfo.fullName }}! 👋</span>
+            <span class="admin-welcome" *ngIf="adminInfo.role !== 'admin'">Welcome, {{ adminInfo.fullName }}! 👋</span>
+          </div>
+        </header>
+
+        <!-- Dashboard Tab -->
+        <div *ngIf="activeTab === 'dashboard'" class="tab-content">
+          <div class="pro-dashboard-cards">
+            <div class="pro-dashboard-card card-products">
+              <div class="dashboard-icon">📦</div>
+              <div class="dashboard-label">Total Products</div>
+              <div class="dashboard-value">{{ products.length }}</div>
+            </div>
+            <div class="pro-dashboard-card card-users">
+              <div class="dashboard-icon">👥</div>
+              <div class="dashboard-label">Total Users</div>
+              <div class="dashboard-value">{{ users.length }}</div>
+            </div>
+            <div class="pro-dashboard-card card-orders">
+              <div class="dashboard-icon">🛒</div>
+              <div class="dashboard-label">Pending Orders</div>
+              <div class="dashboard-value">{{ getPendingOrders() }}</div>
+            </div>
+            <div class="pro-dashboard-card card-sales">
+              <div class="dashboard-icon">💰</div>
+              <div class="dashboard-label">Total Sales</div>
+              <div class="dashboard-value">TZS {{ getTotalSales() }}</div>
+            </div>
+          </div>
+          <div class="pro-activity-card">
+            <h3 class="activity-header">📋 Recent Activities</h3>
+            <div class="activity-list pro-activity-list">
+              <div *ngIf="activities.length === 0" class="activity-item activity-empty">This is Section for System Recent Activities and Logs.</div>
+              <div *ngFor="let activity of activities" class="activity-item">
+                <span class="activity-icon">{{ getActivityIcon(activity.type) }}</span>
+                <span class="activity-desc">{{ activity.description }}</span>
+                <span class="activity-time">{{ activity.timestamp | date:'short' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Products Tab -->
+        <div *ngIf="activeTab === 'products'" class="tab-content">
+          <div class="section-header">
+            <h2>📦 Product Management</h2>
+            <button class="btn btn-primary" (click)="showAddProductWizard()">➕ Add Product</button>
+          </div>
+          
+          <div class="products-grid">
+            <div *ngFor="let product of products" class="product-card">
+              <img [src]="'http://localhost:8080' + product.image" alt="{{ product.name }}" class="product-image-fixed">
+              <div class="product-info">
+                <h4>{{ product.name }}</h4>
+                <p class="price">TZS {{ product.price }}</p>
+                <p class="category">{{ product.category }}</p>
+                <p class="stock">Stock: {{ product.stock }}</p>
+                <span class="status" [class]="'status-' + product.status">{{ product.status }}</span>
+              </div>
+              <div class="product-actions">
+                <button class="btn btn-sm btn-secondary" (click)="editProduct(product)">✏️ Edit</button>
+                <button
+                  class="btn btn-sm btn-danger"
+                  *ngIf="product.id !== undefined"
+                  (click)="deleteProduct(product.id!)">
+                  🗑️ Delete
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add/Edit Product Modal -->
+          <div *ngIf="showAddProductModal" class="modal-overlay" (click)="closeProductModal()">
+            <div class="modal" (click)="$event.stopPropagation()">
+              <h3>{{ editingProduct ? '✏️ Edit Product' : '➕ Add New Product' }}</h3>
+              <form (ngSubmit)="editingProduct ? updateProduct() : addProduct()">
+                <input [(ngModel)]="newProduct.name" name="name" placeholder="Product Name" required>
+                <input [(ngModel)]="newProduct.price" name="price" type="number" placeholder="Price" required>
+                <input [(ngModel)]="newProduct.category" name="category" placeholder="Category" required>
+                <input [(ngModel)]="newProduct.stock" name="stock" type="number" placeholder="Stock" required>
+                <input type="file" (change)="onImageSelected($event)" accept="image/*" name="imageFile">
+                <img *ngIf="newProduct.image" [src]="newProduct.image" alt="Preview" class="product-image-preview">
+                <select [(ngModel)]="newProduct.status" name="status" required>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+                <div class="modal-actions">
+                  <button type="submit" class="btn btn-primary">
+                    {{ editingProduct ? '💾 Update Product' : '✅ Add Product' }}
+                  </button>
+                  <button type="button" class="btn btn-secondary" (click)="closeProductModal()">❌ Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div *ngIf="activeTab === 'users'" class="tab-content">
+          <div class="section-header">
+            <h2>👥 User Management</h2>
+            <button class="btn btn-primary" (click)="showAddUserModal = true">➕ Add User</button>
+          </div>
+          
+          <div class="users-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Join Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of users">
+                  <td>{{ user.id }}</td>
+                  <td>{{ user.fullName }}</td>
+                  <td>{{ user.email }}</td>
+                  <td><span class="role-badge role-{{ user.role }}">{{ user.role }}</span></td>
+                  <td><span class="status-badge status-{{ user.status }}">{{ user.status || 'active' }}</span></td>
+                  <td>{{ user.joinDate ? (user.joinDate | date:'short') : '' }}</td>
+                  <td>
+                    <button class="btn btn-sm btn-secondary" (click)="editUser(user)">✏️</button>
+                    <button class="btn btn-sm btn-danger" (click)="deleteUser(user.id!)">🗑️</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Add User Modal -->
+          <div *ngIf="showAddUserModal" class="modal-overlay" (click)="showAddUserModal = false">
+            <div class="modal" (click)="$event.stopPropagation()">
+              <h3>➕ Add New User</h3>
+              <form (ngSubmit)="addUser()">
+                <input [(ngModel)]="newUser.fullName" name="fullName" placeholder="Full Name" required>
+                <input (ngModel)="newUser.email" name="email" type="email" placeholder="Email" required>
+                <select (ngModel)="newUser.role" name="role" required>
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+                <select (ngModel)="newUser.status" name="status" required>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+                <div class="modal-actions">
+                  <button type="submit" class="btn btn-primary">✅ Add User</button>
+                  <button type="button" class="btn btn-secondary" (click)="showAddUserModal = false">❌ Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div *ngIf="activeTab === 'orders'" class="tab-content">
+          <div class="section-header">
+            <h2>🛒 Order Management</h2>
+            <div class="filter-buttons order-filter-group">
+              <button class="btn btn-sm order-filter-btn" [class.active]="orderFilter === 'all'" (click)="orderFilter = 'all'">All</button>
+              <button class="btn btn-sm order-filter-btn" [class.active]="orderFilter === 'pending'" (click)="orderFilter = 'pending'">Pending</button>
+              <button class="btn btn-sm order-filter-btn" [class.active]="orderFilter === 'approved'" (click)="orderFilter = 'approved'">Approved</button>
+              <button class="btn btn-sm order-filter-btn" [class.active]="orderFilter === 'shipped'" (click)="orderFilter = 'shipped'">Shipped</button>
+              <button class="btn btn-sm order-filter-btn" [class.active]="orderFilter === 'rejected'" (click)="orderFilter = 'rejected'">Rejected</button>
+            </div>
+          </div>
+          <div class="orders-list pro-orders-list">
+            <div *ngFor="let order of getFilteredOrders()" class="order-card pro-order-card">
+              <div class="order-header-row order-header-flex">
+                <h4>Order #{{ order.id }}</h4>
+                <span class="order-status-badge"
+                      [ngClass]="{
+                        'status-approved': order.status === 'approved',
+                        'status-pending': order.status === 'pending',
+                        'status-shipped': order.status === 'shipped',
+                        'status-rejected': order.status === 'rejected'
+                      }">
+                  {{ order.status }}
+                </span>
+                <div class="order-status-dropdown-inline">
+                  <select [(ngModel)]="order.status" (change)="updateOrderStatus(order.id, order.status)"
+                    [ngClass]="{
+                      'dropdown-approved': order.status === 'approved',
+                      'dropdown-pending': order.status === 'pending',
+                      'dropdown-shipped': order.status === 'shipped',
+                      'dropdown-rejected': order.status === 'rejected'
+                    }">
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                </div>
+              </div>
+              <div class="order-details">
+                <div class="order-detail-row"><span class="detail-label">Customer:</span> <span>{{ order.userName }}</span></div>
+                <div class="order-detail-row">
+                  <span class="detail-label">Products:</span>
+                  <table class="order-products-table order-products-table-inline">
+                    <thead>
+                      <tr><th>Name</th><th>Qty</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let p of order.products">
+                        <td>{{ p.name }}</td>
+                        <td>{{ p.quantity }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="order-detail-row"><span class="detail-label">Total:</span> <span class="order-total">TZS {{ order.total }}</span></div>
+                <div class="order-detail-row"><span class="detail-label">Date:</span> <span>{{ order.orderDate | date:'short' }}</span></div>
+              </div>
+              <div class="order-actions">
+                <button class="btn btn-sm btn-info" (click)="viewOrderDetails(order)">View Order</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div *ngIf="activeTab === 'analytics'" class="tab-content">
+          <h2> </h2>
+          <div class="analytics-grid pro-analytics-grid">
+            <div class="analytics-card pro-analytics-card">
+              <div class="analytics-icon">📊</div>
+              <div class="analytics-title">Sales Overview</div>
+              <div class="analytics-value">TZS {{ getTotalSales() }}</div>
+              <div class="analytics-desc">Growth: <span class="analytics-growth">+15% 📈</span></div>
+            </div>
+            <div class="analytics-card pro-analytics-card">
+              <div class="analytics-icon">👥</div>
+              <div class="analytics-title">User Growth</div>
+              <div class="analytics-value">{{ users.length }}</div>
+              <div class="analytics-desc">Active Users: <span class="analytics-highlight">{{ getActiveUsers() }}</span></div>
+            </div>
+            <div class="analytics-card pro-analytics-card">
+              <div class="analytics-icon">📦</div>
+              <div class="analytics-title">Product Performance</div>
+              <div class="analytics-value">Top Selling: <span class="analytics-highlight">{{ bestSeller }}</span></div>
+              <div class="analytics-desc">Low Stock Items: <span class="analytics-highlight">{{ lowStockCount }}</span></div>
+            </div>
+            <div class="analytics-card pro-analytics-card">
+              <div class="analytics-icon">🛒</div>
+              <div class="analytics-title">Order Statistics</div>
+              <div class="analytics-value">Orders Today: <span class="analytics-highlight">{{ getTodayOrders() }}</span></div>
+              <div class="analytics-desc">Completion Rate: <span class="analytics-growth">92%</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Tab
+        <div *ngIf="activeTab === 'settings'" class="tab-content">
+          <h2>⚙️ System Settings</h2>
+          <div class="settings-sections">
+            <div class="settings-section">
+              <h3>🔧 General Settings</h3>
+              <div class="setting-item">
+                <label>Site Name:</label>
+                <input type="text" value="My E-commerce Store" placeholder="Site Name">
+              </div>
+              <div class="setting-item">
+                <label>Maintenance Mode:</label>
+                <input type="checkbox" >
+              </div>
+            </div>
+            <div class="settings-section">
+              <h3>📧 Email Settings</h3>
+              <div class="setting-item">
+                <label>SMTP Server:</label>
+                <input type="text" placeholder="smtp.example.com">
+              </div>
+              <div class="setting-item">
+                <label>Email Notifications:</label>
+                <input type="checkbox" checked>
+              </div>
+            </div>
+            <div class="settings-section">
+              <h3>🔒 Security Settings</h3>
+              <div class="setting-item">
+                <label>Two-Factor Auth:</label>
+                <input type="checkbox" checked>
+              </div>
+              <div class="setting-item">
+                <label>Session Timeout (minutes):</label>
+                <input type="number" value="30">
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary">💾 Save Settings</button>
+        </div>
+         -->
+
+        <!-- Profile Tab -->
+        <div *ngIf="activeTab === 'profile'" class="tab-content">
+          <div class="profile-card">
+            <div class="profile-avatar-section">
+              <div class="profile-avatar-large">
+                <span class="avatar-icon">👨‍💼</span>
+              </div>
+              <button class="btn btn-sm btn-photo" type="button">📷 Change Photo</button>
+            </div>
+            <form class="profile-info-grid" (ngSubmit)="updateAdminProfile()">
+              <div class="info-row">
+                <label for="adminFullName">Name:</label>
+                <input id="adminFullName" type="text" [(ngModel)]="adminInfo.fullName" name="adminFullName" placeholder="Name" required>
+              </div>
+              <div class="info-row">
+                <label for="adminEmail">Email:</label>
+                <input id="adminEmail" type="email" [(ngModel)]="adminInfo.email" name="adminEmail" placeholder="Email" required>
+              </div>
+              <div class="info-row">
+                <label for="adminRole">Role:</label>
+                <input id="adminRole" type="text" [(ngModel)]="adminInfo.role" name="adminRole" readonly>
+              </div>
+              <div class="info-row">
+                <label>Region:</label>
+                <input id="adminRegion" type="text" [(ngModel)]="adminInfo.region" name="adminRegion" placeholder="Region">
+              </div>
+              <div class="info-row">
+                <label>Last Login:</label>
+                <span class="readonly-value">{{ adminInfo.joinDate | date:'full' }}</span>
+              </div>
+              <button type="submit" class="btn btn-primary profile-update-btn">💾 Update Profile</button>
+            </form>
+            <div class="profile-stats-card">
+              <h3>📊 Your Statistics</h3>
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <span class="stat-label">Total Orders Managed:</span>
+                  <span class="stat-value">{{ orders.length }}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Revenue Generated:</span>
+                  <span class="stat-value">TZS {{ getTotalSales() }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Custom Logout Modal -->
+      <div *ngIf="showLogoutModal" class="modal-overlay" (click)="cancelLogout()">
+        <div class="modal logout-modal" (click)="$event.stopPropagation()">
+          <h3>Confirm Logout</h3>
+          <p>Are you sure you want to logout?</p>
+          <div class="modal-actions">
+            <button class="btn btn-danger" (click)="confirmLogout()">Yes, Logout</button>
+            <button class="btn btn-secondary" (click)="cancelLogout()">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="showOrderDetailsModal" class="modal-overlay" (click)="closeOrderDetailsModal()">
+        <div class="modal order-details-modal" (click)="$event.stopPropagation()">
+          <h3>Order #{{ selectedOrder?.id }}</h3>
+          <div><strong>Customer:</strong> {{ selectedOrder?.userName }}</div>
+          <div><strong>Status:</strong> {{ selectedOrder?.status }}</div>
+          <div><strong>Products:</strong></div>
+          <table class="order-products-table">
+            <thead>
+              <tr><th>Name</th><th>Quantity</th><th>Price</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of selectedOrder?.products">
+                <td>{{ p.name }}</td>
+                <td>{{ p.quantity }}</td>
+                <td>{{ p.price }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div><strong>Total:</strong> TZS {{ selectedOrder?.total }}</div>
+          <div><strong>Date:</strong> {{ selectedOrder?.orderDate }}</div>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" (click)="closeOrderDetailsModal()">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>

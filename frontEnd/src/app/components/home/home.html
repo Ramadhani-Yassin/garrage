@@ -1,0 +1,54 @@
+<app-navbar></app-navbar>
+<div class="hero-section">
+  <div class="hero-content">
+    <h1>Your Trusted Source for Auto Spare Parts</h1>
+    <p>Quality parts for your vehicle delivered fast.</p>
+    <div class="search-bar">
+      <input
+        #searchInput
+        type="text"
+        placeholder="Search for parts, brands, or categories..."
+        (input)="onSearch(searchInput.value)"
+        [value]="searchQuery"
+      />
+      <button (click)="onSearch(searchInput.value)">Search</button>
+    </div>
+  </div>
+</div>
+
+<section class="categories-section">
+  <h2>Shop by Category</h2>
+  <div class="categories-list">
+    <div
+      class="category-card"
+      *ngFor="let category of featuredCategories"
+      tabindex="0"
+    >
+      <div class="category-icon">{{ category.icon }}</div>
+      <div class="category-name">{{ category.name }}</div>
+    </div>
+  </div>
+</section>
+
+<section class="products-section">
+  <h2 *ngIf="searchQuery">Search Results</h2>
+  <h2 *ngIf="!searchQuery">Featured Products</h2>
+  <div class="products-grid">
+    <div
+      class="product-card"
+      *ngFor="let product of searchQuery ? searchResults : featuredProducts"
+    >
+      <img [src]="'http://localhost:8080' + product.image" [alt]="product.name" />
+      <h3>{{ product.name }}</h3>
+      <p class="price">TZS {{ product.price }}</p>
+      <button (click)="addToCart(product.id)">Add to Cart</button>
+    </div>
+    <div
+      *ngIf="searchQuery && searchResults.length === 0"
+      class="not-found not-found-message"
+    >
+      No products found for "{{ searchQuery }}"
+    </div>
+  </div>
+</section>
+<app-footer></app-footer>

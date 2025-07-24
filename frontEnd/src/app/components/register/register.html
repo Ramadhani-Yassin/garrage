@@ -1,0 +1,41 @@
+<div class="register-container">
+  <h2>AutoSpare Signup</h2>
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+    
+    <label>Full Name:</label>
+    <input formControlName="fullName" type="text" placeholder="Enter your full name" />
+    <div *ngIf="registerForm.get('fullName')?.invalid && registerForm.get('fullName')?.touched">
+      Name is required.
+    </div>
+
+    <label>Email:</label>
+    <input formControlName="email" type="email" placeholder="Enter your email" />
+    <div *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+      Valid email is required.
+    </div>
+
+    <label>Region:</label>
+    <select formControlName="region">
+      <option value="">Select Region</option>
+      <option *ngFor="let region of regions" [value]="region">{{ region }}</option>
+    </select>
+    <div *ngIf="registerForm.get('region')?.invalid && registerForm.get('region')?.touched">
+      Region is required.
+    </div>
+
+    <label>Password:</label>
+    <input formControlName="password" type="password" placeholder="Create a strong password" />
+    <div *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+      Password must be at least 8 characters, include uppercase, lowercase, number, and symbol.
+    </div>
+
+    <label>Confirm Password:</label>
+    <input formControlName="confirmPassword" type="password" placeholder="Confirm your password" />
+    <div *ngIf="registerForm.hasError('mismatch') && registerForm.get('confirmPassword')?.touched">
+      Passwords do not match.
+    </div>
+
+    <button [disabled]="registerForm.invalid" type="submit">Register</button>
+  </form>
+</div>
+

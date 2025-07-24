@@ -1,0 +1,69 @@
+<app-navbar></app-navbar>
+
+<div class="checkout-container">
+  <h2>Checkout</h2>
+  <div class="checkout-content">
+    <form class="shipping-form" #f="ngForm" (ngSubmit)="placeOrder()">
+      <h3>Shipping Details</h3>
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" [(ngModel)]="shippingInfo.name" name="name" required />
+      </div>
+      <div class="form-group">
+        <label>Address</label>
+        <input type="text" [(ngModel)]="shippingInfo.address" name="address" required />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" [(ngModel)]="shippingInfo.city" name="city" required />
+        </div>
+        <div class="form-group">
+          <label>ZIP</label>
+          <input type="text" [(ngModel)]="shippingInfo.zip" name="zip" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Country</label>
+        <input type="text" [(ngModel)]="shippingInfo.country" name="country" required />
+      </div>
+      <div class="form-group">
+        <label>Payment Method</label>
+        <select [(ngModel)]="paymentMethod" name="paymentMethod">
+          <option value="credit">Credit Card</option>
+          <option value="paypal">PayPal</option>
+          <option value="cod">Cash on Delivery</option>
+        </select>
+      </div>
+      <button class="place-order-btn" type="submit">Place Order</button>
+    </form>
+    <div class="order-summary">
+      <h3>Order Summary</h3>
+      <div *ngFor="let item of cartItems" class="summary-item">
+        <img [src]="item.image" alt="{{item.name}}" />
+        <div>
+          <div>{{item.name}} x{{item.quantity}}</div>
+          <div class="summary-price">${{(item.price * item.quantity).toFixed(2)}}</div>
+        </div>
+      </div>
+      <div class="summary-row">
+        <span>Subtotal:</span>
+        <span>${{ getSubtotal().toFixed(2) }}</span>
+      </div>
+      <div class="summary-row">
+        <span>Tax (7%):</span>
+        <span>${{ getTax().toFixed(2) }}</span>
+      </div>
+      <div class="summary-row">
+        <span>Shipping:</span>
+        <span>${{ shipping.toFixed(2) }}</span>
+      </div>
+      <div class="summary-row total">
+        <strong>Total:</strong>
+        <strong>${{ getGrandTotal().toFixed(2) }}</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

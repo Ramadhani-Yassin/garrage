@@ -1,0 +1,159 @@
+.cart-container {
+  max-width: 520px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 2px 12px #0002;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 1rem;
+}
+
+.cart-item img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 1.2rem;
+  border: 1px solid #eee;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.price {
+  color: #007bff;
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  margin: 0.5rem 0;
+}
+
+.quantity-controls button {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: #eee;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.quantity-controls button:disabled {
+  background: #f5f5f5;
+  color: #bbb;
+  cursor: not-allowed;
+}
+
+.quantity-controls span {
+  margin: 0 0.7rem;
+  min-width: 24px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.item-subtotal {
+  font-size: 0.95rem;
+  color: #444;
+  margin-bottom: 0.3rem;
+}
+
+.remove-btn {
+  background: #ffdddd;
+  border: none;
+  color: #c00;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+
+.remove-btn:hover {
+  background: #ffcccc;
+}
+
+.cart-summary {
+  margin-top: 2rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.2rem;
+  box-shadow: 0 1px 4px #0001;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+  font-size: 1.05rem;
+}
+
+.summary-row.total {
+  font-size: 1.15rem;
+  font-weight: bold;
+  color: #007bff;
+  margin-top: 1rem;
+}
+
+.summary-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  margin-top: 1.2rem;
+}
+
+.clear-btn, .checkout-btn {
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.clear-btn {
+  background: #eee;
+  color: #333;
+  transition: background 0.2s;
+}
+
+.clear-btn:hover {
+  background: #e0e0e0;
+}
+
+.checkout-btn {
+  background: #007bff;
+  color: #fff;
+  transition: background 0.2s;
+}
+
+.checkout-btn:disabled {
+  background: #b3d1ff;
+  color: #fff;
+  cursor: not-allowed;
+}
+
+.empty-cart {
+  text-align: center;
+  color: #888;
+  margin: 3rem 0;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+}

@@ -1,0 +1,25 @@
+<app-navbar></app-navbar>
+
+<!-- Login/Register Modal -->
+<div *ngIf="showLoginModal" class="modal-overlay" (click)="closeModal()">
+  <div class="modal login-modal" (click)="$event.stopPropagation()">
+    <div class="modal-icon">🔒</div>
+    <h2 class="modal-title">Login Required</h2>
+    <div class="modal-message" [innerHTML]="modalMessage"></div>
+    <button class="modal-btn" (click)="closeModal()">OK</button>
+  </div>
+</div>
+
+<div class="product-list">
+  <div class="product-card" *ngFor="let product of products">
+    <img [src]="getProductImage(product)" [alt]="product.name" />
+    <h3>{{ product.name }}</h3>
+    <div class="price">TZS {{ product.price }}</div>
+    <div class="stock" [class.out]="product.stock <= 0">
+      {{ product.stock > 0 ? 'In Stock' : 'Out of Stock' }}
+    </div>
+    <button [disabled]="product.stock <= 0" (click)="addToCart(product)" class="home-style-btn">Add to Cart</button>
+  </div>
+</div>
+
+<app-footer></app-footer>
